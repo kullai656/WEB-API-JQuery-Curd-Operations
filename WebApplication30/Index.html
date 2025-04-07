@@ -1,0 +1,184 @@
+﻿
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Employee Management</title>
+    <script src="Scripts/jquery-3.7.0.min.js"></script>
+    <style>
+        table {
+            width: 60%;
+            margin: 5px auto;
+            border-collapse: collapse;
+            background-color: #ffffff;
+            
+        }
+        th,td{
+            padding:10px 12px;
+            text-align:center;
+            border:1px solid #ddd;
+        }
+        thead {
+            background-color:hotpink;
+            color: white;
+        }
+
+        td:nth-child(1) {background-color: #FFF0F5; }
+       
+        td:nth-child(2) {background-color: #FFE4E1;}
+
+        td:nth-child(3) {background-color: #F0FFF0;}
+
+        td:nth-child(4) { background-color: #E6E6FA;}
+
+        td:nth-child(5) {background-color: #FFFACD; }
+
+        td:nth-child(6) {background-color: #E0FFFF;}
+      
+    </style>
+</head>
+<body>
+    <table border="1" align="center" id="tblempolyee">
+        <caption style="text-align: center; color:black">Employee Details</caption>
+        <thead>
+            <tr>
+                <th>EmployeeId</th>
+                <th>Name</th>
+                <th>Company</th>
+                <th>Disgination</th>
+                <th>Salary</th>
+                <th>Location</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <br />
+    <table border="0" align="center" />
+    <h2 style="left"; color: #FFABAB;">Employee Details</h2>
+    <form id="form1" >
+        EmployeeId: <input type="text" name="Id" id="EmployeeId" /><br /><br />
+        Name: <input type="text" name="Name" id="Name"  /><br /><br />
+        Company: <input type="text" name="Company" id="Company" /><br /><br />
+        Disgination: <input type="text" name="Disgination" id="Disgination" /><br /><br />
+        Salary: <input type="text" name="Salary" id="Salary" /><br /><br />
+        Location: <input type="text" name="Location" id="Location" /><br /><br />
+        <input type="button" id="btnSubmit" value="Save Data" style="background-color: #E0FFFF" />
+        <span id="displayText"></span>
+        <input type="button" id="btnUpdate" value="Update" style="background-color: #FFE4E1" />
+        <input type="button" id="btnDelete" value="Delete" style="background-color: #E6E6FA" />
+        <span id="displaydelete"></span>
+        <input type="reset" id="btnrest" value="Clear" style="background-color: #FFFACD" />
+    </form>
+    </table>
+
+    <script>
+        function GetData() {
+            $.ajax({
+                url: "/api/Employees",
+                method: "GET",
+                success: function (res) {
+                    var tableString = "";
+                    $.each(res, function (index, value) {
+                        tableString += "<tr><td>" +
+                            value.EmployeeId + "</td><td>" +
+                            value.Name + "</td><td>" +
+                            value.Company + "</td><td>" +
+                            value.Disgination + "</td><td>" +
+                            value.Salary + "</td><td>" +
+                            value.Location + "</td></tr>";
+                    });
+                    $("#tblempolyee tbody").html(tableString);
+                },
+                error: function (error) {
+                    console.log(error);
+                }
+            });
+        }
+
+        $("#btnSubmit").click(function () {
+            var employee = {
+                EmployeeId: $('#EmployeeId').val(),
+                Name: $('#Name').val(),
+                Company: $('#Company').val(),
+                Disgination: $('#Disgination').val(),
+                Salary: $('#Salary').val(),
+                Location: $('#Location').val()
+            };
+            $.ajax({
+                url: "/api/Employees",
+                type: "POST",
+                data: JSON.stringify(employee),
+                contentType: "application/json",
+                dataType: "json",
+                success: function (data) {
+                    $("#displayText").text("Data Inserted Successfully!");
+                    GetData();
+                },
+                error: function (xhr) {
+                    $("#displayText").text("Failed to Insert Data!");
+                }
+            });
+        });
+
+        $(document).ready(function () {
+            $("#btnUpdate").click(function () {
+                var status = confirm('Are you sure the update this record?');
+                if (status) {
+                    var employeeId = $('#EmployeeId').val();
+                    $.ajax({
+                        url: '/api/Employees/' + employeeId,
+                        type: 'PUT',
+                        contentType: 'application/json',
+                        data: JSON.stringify({
+                            EmployeeId: employeeId,
+                            Name: $('#Name').val(),
+                            Company: $('#Company').val(),
+                            Disgination: $('#Disgination').val(),
+                            Salary: $('#Salary').val(),
+                            Location: $('#Location').val()
+                        }),
+                        success: function (response) {
+                            alert('Update successful!');
+                            location.reload();
+                        },
+                        error: function (xhr) {
+                            alert('Update failed: ' + xhr.responseText);
+                        }
+                    });
+                }
+            });
+        });
+        $(document).ready(function () {
+            $("#btnDelete").click(function () {
+                var status = confirm('Are you sure the delete this record?');
+                if (status) {
+                    $.ajax({
+                        url: '/api/Employees/Delete/' + $('#EmployeeId').val(),
+                        type: 'DELETE',
+                        dataType: 'json',
+                        success: function () {
+                            $("#displaydelete").text("Data Deleted Successfully!");
+                            GetData();
+                        },
+                        error: function () {
+                            $("#displaydelete").text("Failed to Delete Data!");
+                        }
+                    });
+                }
+            });
+        });
+        function Clear() {
+            $('#table1').trigger("reset");
+            GetData();
+            $('#EmployeeId').focus();
+        }
+
+    </script>
+    <script>
+        $(document).ready(function () {
+            GetData();
+        });
+    </script>
+</body>
+</html>
+
